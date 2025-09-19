@@ -16,6 +16,7 @@ export const fetchNotes = async (
   const params: Record<string, string | number> = {
     page,
     search: mySearchNote,
+    perPage: 12,
   };
 
   if (tag) {

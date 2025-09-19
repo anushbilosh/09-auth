@@ -7,28 +7,38 @@ import {
 import NotesClient from "@/app/(private routes)/notes/filter/[...slug]/Notes.client";
 import { Metadata } from "next";
 
+type RouteParams = { slug: string[] };
+
 type Props = {
-  params: Promise<{ slug: string[] }>;
+  params: Promise<RouteParams> | RouteParams;
+};
+
+const normalizeTag = (slug?: string[]): string | undefined => {
+  const raw = slug?.[0];
+  if (!raw) return undefined;
+  const lower = raw.toLowerCase();
+  if (lower === "all") return undefined;
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const raw = slug?.[0] ?? "all";
-  const filter = raw.toLowerCase() === "all" ? undefined : raw;
+  const resolved = await params;
+  const filter = normalizeTag(resolved.slug);
+  const ogTag = filter ?? "All";
   return {
-    title: `NoteHub: ${filter}`,
-    description: `Notes were filtered by ${filter} tag`,
+    title: `NoteHub: ${ogTag}`,
+    description: `Notes were filtered by ${ogTag} tag`,
     openGraph: {
       type: "website",
-      url: `https://08-zustand-eight-delta.vercel.app/notes/filter/${filter}`,
-      title: `NoteHub: ${filter}`,
-      description: `Notes were filtered by ${filter} tag`,
+      url: `https://08-zustand-eight-delta.vercel.app/notes/filter/${ogTag}`,
+      title: `NoteHub: ${ogTag}`,
+      description: `Notes were filtered by ${ogTag} tag`,
       images: [
         {
           url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
           width: 1200,
           height: 630,
-          alt: `NoteHub: ${filter}`,
+          alt: `NoteHub: ${ogTag}`,
         },
       ],
     },
@@ -36,11 +46,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Notes({ params }: Props) {
-  const { slug } = await params;
-  const filter = slug[0] === "All" ? undefined : slug[0];
+  const resolved = await params;
+  const filter = normalizeTag(resolved.slug);
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery({
-    queryKey: ["notes", { page: 1, search: "", tag: filter }],
+    queryKey: ["notes", { page: 1, query: "", tag: filter }],
     queryFn: () => fetchServerNotes(1, "", filter),
   });
   return (
