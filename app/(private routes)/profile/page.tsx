@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   description: "User's profile page",
   openGraph: {
     type: "website",
-    url: "https://08-zustand-eight-delta.vercel.app/",
+    url: "https://09-auth-nu-lilac.vercel.app/",
     title: "User Profile",
     description: "User's profile page",
     images: [
